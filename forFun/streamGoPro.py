@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 """Quick command line python app to get a video stream from a GoPro Hero 4
 
+Maybe I'll make this into a full fledged API soon...
+
 Launch this script from the command line with a numerical input argument for the number of the camera you want to connect to e.g.
  	./streamGoPro.py 1
 
 Creates 2 processes:
-1) A heartbeat, which pings the camera every 2s to keep the connection alive (code based on: https://gist.github.com/3v1n0/38bcd4f7f0cb3c279bad#file-hero4-udp-keep-alive-send-py)
+1) A heartbeat, which pings the camera every 2s to keep the connection alive
 2) A call to ffplay to start streaming over udp
 
-Ensures a connection to the camera with a server callback check on startup.
+Ensures a connection to the camera with a server callback check on startup, and ensures that the camera is in video mode otherwise streaming just sends empty data packets.
 
 Requires:
 ffmpeg
 brew install ffmpeg --with-ffplay
+
+Credit:
+Heartbeat code based on GH gist: https://gist.github.com/3v1n0/38bcd4f7f0cb3c279bad#file-hero4-udp-keep-alive-send-py)
+GoPro API hack commands from: https://github.com/KonradIT/goprowifihack
 """
 import socket
 import sys
@@ -35,7 +41,7 @@ def switchWifi(ssid,pw):
 		out = check_output([
 			'networksetup','-setairportnetwork','en0',ssid,pw])
 		if 'Could not find network' in out:
-			raise Exception(out)
+			raise Exception(out + ' Make sure GoPro wifi is turned on!')
 		elif not out:
 			print "Connection successful!"
 
@@ -95,10 +101,20 @@ def checkCallBack():
 			reply = urllib.urlopen('http://10.5.5.9/gp/gpControl/execute?p1=gpStream&c1=restart').read()
 		raise Exception('Could not connect to GoPro streaming service!')
 
+def ensureVideoMode():
+	print 'Switching camera to video mode...'
+	reply = urllib.urlopen('http://10.5.5.9/gp/gpControl/command/mode?p=0').read()
+	if reply == '{}\n':
+		print 'Video mode successfully enabled!'
+	else:
+		print 'WARNING: Could not enage video mode. Make sure GoPro is in video mode otherwise streaming will not work!'
+	sleep(2)
+
 if __name__ == '__main__':
 	try:
 		switchWifi(wifiName, wifiPw)
 		checkCallBack()
+		ensureVideoMode()
 		Process(target=keepAlive).start()
 		Process(target=startStream).start()
 	except KeyboardInterrupt:
