@@ -72,10 +72,10 @@ def keepAlive():
 def startStream():
 	print 'Starting stream in 5s...'
 	sleep(5)
-	call('ffplay -fflags nobuffer -f:v mpegts -probesize 8192 udp://:8554', shell=True)
+	call('ffplay -fflags nobuffer -f:v mpegts -probesize 8192 -nostats -loglevel 0 udp://:8554', shell=True)
 
 def checkCallBack():
-	print 'Pinging GoPro in 2s...'
+	print 'Enabling GoPro streaming server in 2s...'
 	sleep(2)
 	reply = urllib.urlopen('http://10.5.5.9/gp/gpControl/execute?p1=gpStream&c1=restart').read()
 	goodCallBack = '{"status":"0"}\n\n'
@@ -111,11 +111,8 @@ def ensureVideoMode():
 	sleep(2)
 
 if __name__ == '__main__':
-	try:
-		switchWifi(wifiName, wifiPw)
-		checkCallBack()
-		ensureVideoMode()
-		Process(target=keepAlive).start()
-		Process(target=startStream).start()
-	except KeyboardInterrupt:
-		print 'Stream Ended'
+	switchWifi(wifiName, wifiPw)
+	checkCallBack()
+	ensureVideoMode()
+	Process(target=keepAlive).start()
+	Process(target=startStream).start()
