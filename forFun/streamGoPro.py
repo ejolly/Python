@@ -110,9 +110,19 @@ def ensureVideoMode():
 		print 'WARNING: Could not enage video mode. Make sure GoPro is in video mode otherwise streaming will not work!'
 	sleep(2)
 
+def ensureNarrowFOV():
+	print 'Switching camera to narrow FOV...'
+	reply = urllib.urlopen('http://10.5.5.9/gp/gpControl/setting/4/2').read()
+	if reply == '{}\n':
+		print 'Narrow FOV successfully enabled!'
+	else:
+		print 'WARNING: Could not switch FOV. Make sure GoPro is accessible...might need to verify setting manually....'
+	sleep(2)
+
 if __name__ == '__main__':
 	switchWifi(wifiName, wifiPw)
 	checkCallBack()
 	ensureVideoMode()
+	ensureNarrowFOV()
 	Process(target=keepAlive).start()
 	Process(target=startStream).start()
