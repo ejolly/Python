@@ -75,8 +75,8 @@ def startStream():
 	call('ffplay -fflags nobuffer -f:v mpegts -probesize 8192 -nostats -loglevel 0 udp://:8554', shell=True)
 
 def checkCallBack():
-	print 'Enabling GoPro streaming server in 2s...'
-	sleep(2)
+	print 'Enabling GoPro streaming server in 5s...'
+	sleep(5)
 	reply = urllib.urlopen('http://10.5.5.9/gp/gpControl/execute?p1=gpStream&c1=restart').read()
 	goodCallBack = '{"status":"0"}\n\n'
 	attempts = 0
